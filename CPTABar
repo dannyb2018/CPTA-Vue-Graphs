@@ -1,0 +1,137 @@
+/*
+Copyright 2017-2019 Advanced Products Limited, 
+dannyb@cloudpta.com
+github.com/dannyb2018
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*/
+const CPTABar =
+Vue.component
+(
+    'cpta-graph-bar', 
+    {
+        template: 
+                `
+                <div >
+                    <svg v-bind:id="root_element_id" 
+                    v-bind:width="total_width" 
+                    v-bind:height="total_height"
+                    v-bind:style="{backgroundColor: background_colour}">    
+                    </svg>
+                </div>
+                `,
+        name: 'cpta-graph-bar',
+        props:
+            {
+                total_height: {default: 400}, 
+                total_width: {default: 400},
+                x_axis_colour: {default: "#FFFFFF"}, 
+                y_axis_colour: {default: "#FFFFFF"},
+                background_colour: {default: "#000"},
+                root_element_id: {default: "ridgeline_root"},
+                margin_top: {default:30},
+                margin_right: {default:30},
+                margin_bottom: {default:20},
+                margin_left: {default:110},
+            },
+        mounted: function()
+        {
+            var test_data = 
+                    {
+                        labels:['A', 'B', 'C', 'D', 'E', 'F'], 
+                        values: [12,1,13,11,2,5,22],
+                        colours:["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FF00FF", "#000"]
+                    };            
+            this.plot_graph(test_data);
+        },
+        methods:
+        {
+            plot_graph: function(graph_data)
+            {
+                // assuming there is any data
+                if((typeof graph_data !== "undefined") )
+                {
+                    var width = this.total_width - this.margin_left - this.margin_right;
+                    var height = this.total_height - this.margin_top - this.margin_bottom;
+
+                    // Find the child of the svg, if there is one and delete it as we are starting from scratch
+                    d3.selectAll('#' + this.root_element_id + ' > *').remove();
+
+                    var svg = d3.select('#' + this.root_element_id)
+                    .append("g")
+                    .attr("transform",
+                          "translate(" + this.margin_left + "," + this.margin_top + ")");
+                    // X axis
+                    var x = d3.scaleBand()
+                    .range([ 0, width ])
+                    .domain(graph_data.labels)
+                    .padding(0.2);
+                    svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .attr('class', 'x-axis')            
+                    .call(d3.axisBottom(x))
+                    .selectAll("text")
+                    .attr("transform", "translate(-10,0)rotate(-45)")
+                    .style("text-anchor", "end");
+
+                    // Add Y axis
+                    var y = d3.scaleLinear()
+                    .domain([0, d3.max(graph_data.values)])
+                    .range([ height, 0]);
+                    svg.append("g")
+                    .attr('class', 'y-axis')            
+                    .call(d3.axisLeft(y));
+
+                    // Set the colour palette for the groups, colours can be an array or scale
+                    var colour = d3.scaleOrdinal()
+                    .domain(graph_data.labels)
+                    .range(graph_data.colours);
+
+                    // Bars
+                    svg.selectAll("bars")
+                    .data(graph_data.labels)
+                    .enter()
+                    .append("rect")
+                    .attr("x", function(d) { return x(d); })
+                    .attr("y", function(d, i) { return y(graph_data.values[i]); })
+                    .attr("width", x.bandwidth())
+                    .attr("height", function(d,i) { return height - y(graph_data.values[i]); })
+                    .attr("fill", function(d,i) { return colour(d); })
+
+                    // Recolour the axis
+                    this.recolour_axis(svg);
+                }
+            },
+            
+            recolour_axis: function(rootElement)
+            {
+                // Recolour the x-axis
+                rootElement.selectAll('.x-axis > .domain')
+                .attr("stroke", this.x_axis_colour);
+                rootElement.selectAll('.x-axis > .tick line')
+                .attr("stroke", this.x_axis_colour);
+                rootElement.selectAll('.x-axis > .tick text')
+                .attr("fill", this.x_axis_colour);
+
+                // Recolour the x-axis
+                rootElement.selectAll('.y-axis > .domain')
+                .attr("stroke", this.y_axis_colour);
+                rootElement.selectAll('.y-axis > .tick line')
+                .attr("stroke", this.y_axis_colour);
+                rootElement.selectAll('.y-axis > .tick text')
+                .attr("fill", this.y_axis_colour);                
+            }
+        }
+    }
+);
