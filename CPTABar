@@ -23,40 +23,85 @@ Vue.component
     {
         template: 
                 `
-                <div >
+                <div>
                     <svg v-bind:id="root_element_id" 
-                    v-bind:width="total_width" 
-                    v-bind:height="total_height"
+                    v-bind:viewBox="viewbox" 
+                    preserveAspectRatio="none"
                     v-bind:style="{backgroundColor: background_colour}">    
                     </svg>
                 </div>
                 `,
         name: 'cpta-graph-bar',
         props:
-            {
-                total_height: {default: 400}, 
-                total_width: {default: 400},
-                x_axis_colour: {default: "#FFFFFF"}, 
-                y_axis_colour: {default: "#FFFFFF"},
-                background_colour: {default: "#000"},
-                root_element_id: {default: "ridgeline_root"},
-                margin_top: {default:30},
-                margin_right: {default:30},
-                margin_bottom: {default:20},
-                margin_left: {default:110},
-            },
+        {
+            total_height: {default: 400}, 
+            total_width: {default: 400},
+            x_axis_colour: {default: "#FFFFFF"}, 
+            y_axis_colour: {default: "#FFFFFF"},
+            background_colour: {default: "#000"},
+            root_element_id: {default: "barchart_" + (new Date()).getTime()},
+            margin_top: {default:30},
+            margin_right: {default:30},
+            margin_bottom: {default:50},
+            margin_left: {default:20},
+            graph_data: {default: function(){return {labels:[],colours:[],values:[]};}},    
+        },
         mounted: function()
         {
-            var test_data = 
-                    {
-                        labels:['A', 'B', 'C', 'D', 'E', 'F'], 
-                        values: [12,1,13,11,2,5,22],
-                        colours:["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FF00FF", "#000"]
-                    };            
-            this.plot_graph(test_data);
+            this.refresh();
         },
+        computed:
+        {
+            viewbox:
+            {
+                get: function()
+                {
+                    return '0 0 ' + this.total_width + ' ' + this.total_height;
+                }
+            },
+            labels:
+            {
+                cache:false,
+                get: function()
+                {
+                    return this.graph_data.labels;
+                },
+                set: function(newValue)
+                {
+                    this.graph_data.labels = newValue;
+                }
+            },
+            colours:
+            {
+                cache:false,
+                get: function()
+                {
+                    return this.graph_data.colours;
+                },
+                set: function(newValue)
+                {
+                    this.graph_data.colours = newValue;
+                }
+            },
+            values:
+            {
+                cache:false,
+                get: function()
+                {
+                    return this.graph_data.values;
+                },
+                set: function(newValue)
+                {
+                    this.graph_data.values = newValue;
+                }
+            },
+        },        
         methods:
         {
+            refresh: function()
+            {
+                this.plot_graph(this.graph_data);
+            },
             plot_graph: function(graph_data)
             {
                 // assuming there is any data
