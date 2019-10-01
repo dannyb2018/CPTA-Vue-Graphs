@@ -25,28 +25,38 @@ Vue.component
                 `
                 <div >
                     <svg v-bind:id="root_element_id" 
-                    v-bind:width="total_width" 
-                    v-bind:height="total_height"
+                    v-bind:viewBox="viewbox" 
+                    preserveAspectRatio="none"
                     v-bind:style="{backgroundColor: background_colour}">    
                     </svg>
                 </div>
                 `,
         name: 'cpta-graph-ridgeline',
         props:
+        {
+            total_height: {default: 400}, 
+            total_width: {default: 400},
+            fill_colour: {default: "#FFFFFF"},
+            x_axis_colour: {default: "#FFFFFF"}, 
+            y_axis_colour: {default: "#FFFFFF"},
+            stroke_colour: {default: "#FFFFFF"}, 
+            background_colour: {default: "#000"},
+            root_element_id: {default: "ridgeline_root"},
+            margin_top: {default:30},
+            margin_right: {default:30},
+            margin_bottom: {default:20},
+            margin_left: {default:110},
+        },
+        computed:
+        {
+            viewbox:
             {
-                total_height: {default: 400}, 
-                total_width: {default: 400},
-                fill_colour: {default: "#FFFFFF"},
-                x_axis_colour: {default: "#FFFFFF"}, 
-                y_axis_colour: {default: "#FFFFFF"},
-                stroke_colour: {default: "#FFFFFF"}, 
-                background_colour: {default: "#000"},
-                root_element_id: {default: "ridgeline_root"},
-                margin_top: {default:30},
-                margin_right: {default:30},
-                margin_bottom: {default:20},
-                margin_left: {default:110},
-            },
+                get: function()
+                {
+                    return '0 0 ' + this.total_width + ' ' + this.total_height;
+                }
+            }
+        },        
         mounted: function()
         {
             this.plot_graph([{a:80, b:30, c:30}, {a:90, b:90,c:40}]);
