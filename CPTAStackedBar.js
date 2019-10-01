@@ -25,26 +25,36 @@ Vue.component
                 `
                 <div >
                     <svg v-bind:id="root_element_id" 
-                    v-bind:width="total_width" 
-                    v-bind:height="total_height"
+                    v-bind:viewBox="viewbox" 
+                    preserveAspectRatio="none"
                     v-bind:style="{backgroundColor: background_colour}">    
                     </svg>
                 </div>
                 `,
         name: 'cpta-graph-stacked-bar',
         props:
+        {
+            total_height: {default: 400}, 
+            total_width: {default: 400},
+            x_axis_colour: {default: "#FFFFFF"}, 
+            y_axis_colour: {default: "#FFFFFF"},
+            background_colour: {default: "#000"},
+            root_element_id: {default: "ridgeline_root"},
+            margin_top: {default:30},
+            margin_right: {default:30},
+            margin_bottom: {default:20},
+            margin_left: {default:110},
+        },
+        computed:
+        {
+            viewbox:
             {
-                total_height: {default: 400}, 
-                total_width: {default: 400},
-                x_axis_colour: {default: "#FFFFFF"}, 
-                y_axis_colour: {default: "#FFFFFF"},
-                background_colour: {default: "#000"},
-                root_element_id: {default: "ridgeline_root"},
-                margin_top: {default:30},
-                margin_right: {default:30},
-                margin_bottom: {default:20},
-                margin_left: {default:110},
-            },
+                get: function()
+                {
+                    return '0 0 ' + this.total_width + ' ' + this.total_height;
+                }
+            }
+        },        
         mounted: function()
         {
             var test_data = 
@@ -101,7 +111,7 @@ Vue.component
                     .call(d3.axisLeft(y));
 
                     // Set the colour palette for the groups, colours can be an array or scale
-                    var color = d3.scaleOrdinal()
+                    var colour = d3.scaleOrdinal()
                     .domain(subgroups)
                     .range(graph_data.colours);
 
@@ -132,7 +142,7 @@ Vue.component
                     // Enter in the stack data = loop key per key = group per group
                     .data(stackedData)
                     .enter().append("g")
-                    .attr("fill", function(d) { return color(d.key); })
+                    .attr("fill", function(d) { return colour(d.key); })
                     .attr("class", function(d){ return "myRect " + d.key; }) // Add subgroup name to the class as we'll use this later to highlight
                     .selectAll("rect")
                     // enter a second time = loop subgroup per subgroup to add all rectangles
